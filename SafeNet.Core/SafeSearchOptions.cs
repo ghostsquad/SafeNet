@@ -1,9 +1,8 @@
-﻿namespace SafeNet.Core {
-    using System;
-
-    [Flags]
-    public enum SafeSearchOptions {
-        Wildcard = 0,
-        Regex = 1
+﻿namespace SafeNet.Core {  
+    public enum SafeSearchMethod {
+        None = 0,
+        Wildcard = 1,
+        Regex = 2,
+        JsonPath = 4
     }
 }

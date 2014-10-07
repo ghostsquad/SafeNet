@@ -15,7 +15,7 @@
             throw new NotImplementedException();
         }
 
-        public IList<ISecret> SearchSecrets(string pattern, SafeSearchOptions options) {
+        public IList<ISecret> SearchSecrets(string pattern, SafeSearchMethod method) {
             throw new NotImplementedException();
         }
     }

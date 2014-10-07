@@ -3,10 +3,10 @@
 
     public interface ISafe {
 
-        bool RetrieveSecret(string target, out ISecret secret);
+        ISecret RetrieveSecret(string target);
 
         bool StoreSecret(ISecret secret);
 
-        IList<ISecret> SearchSecrets(string pattern, SafeSearchOptions options);
+        IList<ISecret> SearchSecrets(string pattern, SafeSearchMethod method);
     }
 }

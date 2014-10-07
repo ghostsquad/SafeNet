@@ -11,6 +11,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SafeNet.Wcm", "SafeNet.WCM\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SafeNet.Acl", "SafeNet.Acl\SafeNet.Acl.csproj", "{9A0AE906-397D-46DA-8B49-40FDC6E8C715}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SafeNet.Acl.Test", "SafeNet.Acl.Test\SafeNet.Acl.Test.csproj", "{22B0D532-5E19-40A4-90F5-1FBD36F8C32A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SafeNet.Test.Common", "SafeNet.Test.Common\SafeNet.Test.Common.csproj", "{B30467C8-B479-4318-87CF-C7CFBD0E2C98}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +37,14 @@ Global
 		{9A0AE906-397D-46DA-8B49-40FDC6E8C715}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9A0AE906-397D-46DA-8B49-40FDC6E8C715}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9A0AE906-397D-46DA-8B49-40FDC6E8C715}.Release|Any CPU.Build.0 = Release|Any CPU
+		{22B0D532-5E19-40A4-90F5-1FBD36F8C32A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{22B0D532-5E19-40A4-90F5-1FBD36F8C32A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{22B0D532-5E19-40A4-90F5-1FBD36F8C32A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{22B0D532-5E19-40A4-90F5-1FBD36F8C32A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B30467C8-B479-4318-87CF-C7CFBD0E2C98}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B30467C8-B479-4318-87CF-C7CFBD0E2C98}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B30467C8-B479-4318-87CF-C7CFBD0E2C98}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B30467C8-B479-4318-87CF-C7CFBD0E2C98}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
