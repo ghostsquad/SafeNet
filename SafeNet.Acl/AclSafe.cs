@@ -12,87 +12,55 @@ namespace SafeNet.Acl {
 
     using SafeNet.Core;
 
-    public class AclSafe : ISafe {
+    public abstract class AclSafe<T> : ISafe where T : FileSystemInfo {
         #region Constructors and Destructors
 
-        public AclSafe(FileSystemInfo fileSystemSafeObject) : 
+        protected AclSafe(T fileSystemSafeObject) : 
             this(fileSystemSafeObject, new JsonStorageSchema()) {
         }
 
-        public AclSafe(FileSystemInfo safeObject, IStorageSchema storageSchema) : 
+        protected AclSafe(T safeObject, IStorageSchema storageSchema) : 
             this(safeObject, storageSchema, new WindowsEnvironment()) {
         }
 
-        internal AclSafe(FileSystemInfo safeObject, IStorageSchema storageSchema, EnvironmentWrapper environment) {
+        protected AclSafe(T safeObject, IStorageSchema storageSchema, EnvironmentWrapper environment) {
             this.SafeObject = safeObject;
             this.storageSchema = storageSchema;
             this.environment = environment;
-            this.SafeObjectType = safeObject.GetType();
         }
 
         #endregion
 
         #region Public Properties
 
-        public FileSystemInfo SafeObject { get; private set; }
+        public T SafeObject { get; protected set; }
 
-        public Type SafeObjectType { get; private set; }
+        protected IStorageSchema storageSchema;
 
-        private readonly IStorageSchema storageSchema;
-
-        private readonly EnvironmentWrapper environment;
+        protected EnvironmentWrapper environment;
 
         #endregion
 
         #region Public Methods and Operators
 
-        public void Protect(
-            IEnumerable<AccessRule> rules,
-            AccessRuleProtectionOptions options = AccessRuleProtectionOptions.Protected) {
+        public abstract void Protect(IEnumerable<AccessRule> rules);
 
-            FileSystemSecurity fileSystemSecurityObject = null;
-            if (this.SafeObjectType == typeof(FileInfo)) {
-                fileSystemSecurityObject = new FileSecurity();
-            } else {
-                fileSystemSecurityObject = new DirectorySecurity();
-            }
+        public abstract void Protect(FileSystemSecurity fileSystemSecurity);
 
-            fileSystemSecurityObject.AddAccessRule(AclSafeConstants.AdminsOwnRule);
-            fileSystemSecurityObject.SetOwner(new NTAccount(AclSafeConstants.BuiltinAdmins));
-            foreach (var rule in rules) {
-                fileSystemSecurityObject.SetAccessRule(rule);
-            }
-
-            this.Protect(fileSystemSecurityObject);
-        }
-
-        public void Protect(FileSystemSecurity fileSystemSecurity) {
-            this.environment.SetAccessControl(this.SafeObject, fileSystemSecurity);
-        }
-
-        public ISecret RetrieveSecret(string target) {
-            throw new NotImplementedException();
-        }
+        public abstract ISecret RetrieveSecret(string target);
 
         public ISecret RetrieveSecret(string filePath, string target) {
             return this.SearchSecrets(filePath, target).FirstOrDefault();
         }
 
-        public IList<ISecret> SearchSecrets(string pattern, SafeSearchMethod method = SafeSearchMethod.None) {
-            throw new NotImplementedException();
-        }
+        public abstract IList<ISecret> SearchSecrets(string pattern, SafeSearchMethod method = SafeSearchMethod.None);
 
-        public IList<ISecret> SearchSecrets(
+        public abstract IList<ISecret> SearchSecrets(
             string filePath,
             string pattern,
-            SafeSearchMethod method = SafeSearchMethod.None) {
+            SafeSearchMethod method = SafeSearchMethod.None);
 
-            throw new NotImplementedException();
-        }
-
-        public bool StoreSecret(ISecret secret) {
-            throw new NotImplementedException();
-        }
+        public abstract bool StoreSecret(ISecret secret);
 
         #endregion
     }

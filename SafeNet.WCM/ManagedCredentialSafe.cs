@@ -7,7 +7,7 @@
 
     public class ManagedCredentialSafe : ISafe
     {
-        public bool RetrieveSecret(string target, out ISecret secret) {
+        public ISecret RetrieveSecret(string target) {
             throw new NotImplementedException();
         }
 
