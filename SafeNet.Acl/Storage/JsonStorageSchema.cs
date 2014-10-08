@@ -73,12 +73,12 @@ namespace SafeNet.Acl.Storage {
             return JObject.Parse(File.ReadAllText(path));
         }
 
-        private static List<Secret> GetSecretsFromJson(JObject jObject) {
+        private static List<ISecret> GetSecretsFromJson(JObject jObject) {
             var rootElement = jObject.First;
             if (rootElement != null) {
                 var secretsList = rootElement.First;
                 if (secretsList != null) {
-                    return secretsList.ToObject<List<Secret>>();
+                    return new List<ISecret>(secretsList.ToObject<List<Secret>>());
                 }
             }
 
