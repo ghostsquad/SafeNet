@@ -2,7 +2,6 @@
     public enum SafeSearchMethod {
         None = 0,
         Wildcard = 1,
-        Regex = 2,
-        JsonPath = 4
+        Regex = 2
     }
 }

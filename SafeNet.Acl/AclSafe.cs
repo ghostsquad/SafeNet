@@ -15,12 +15,12 @@ namespace SafeNet.Acl {
     public abstract class AclSafe<T> : ISafe where T : FileSystemInfo {
         #region Constructors and Destructors
 
-        protected AclSafe(T fileSystemSafeObject) : 
-            this(fileSystemSafeObject, new JsonStorageSchema()) {
+        protected AclSafe(T fileSystemSafeObject) :
+            this(fileSystemSafeObject, new JsonStorageSchema(WindowsEnvironment.Default)) {
         }
 
-        protected AclSafe(T safeObject, IStorageSchema storageSchema) : 
-            this(safeObject, storageSchema, new WindowsEnvironment()) {
+        protected AclSafe(T safeObject, IStorageSchema storageSchema) :
+            this(safeObject, storageSchema, WindowsEnvironment.Default) {
         }
 
         protected AclSafe(T safeObject, IStorageSchema storageSchema, EnvironmentWrapper environment) {
