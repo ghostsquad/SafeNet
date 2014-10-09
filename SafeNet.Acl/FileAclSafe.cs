@@ -52,20 +52,16 @@
             this.environment.SetAccessControl(this.SafeObject, fileSystemSecurity);
         }
 
-        public override ISecret RetrieveSecret(string target) {
+        public override ISecret RetrieveSecret(string pattern, SafeSearchMethod method) {
+            return this.storageSchema.ReadSecret(pattern, method);
+        }
+
+        public override IList<ISecret> SearchSecrets(string pattern, SafeSearchMethod method) {
             throw new NotImplementedException();
         }
 
-        public override bool StoreSecret(ISecret secret) {
-            throw new NotImplementedException();
-        }
-
-        public override IList<ISecret> SearchSecrets(string pattern, SafeSearchMethod method = SafeSearchMethod.None) {
-            throw new NotImplementedException();
-        }
-
-        public override IList<ISecret> SearchSecrets(string filePath, string pattern, SafeSearchMethod method = SafeSearchMethod.None) {
-            throw new NotImplementedException();
+        public override void StoreSecret(ISecret secret) {
+            this.storageSchema.WriteSecret(secret);
         }
     }
 }

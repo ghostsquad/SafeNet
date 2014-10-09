@@ -5,7 +5,7 @@
 
         ISecret RetrieveSecret(string target);
 
-        bool StoreSecret(ISecret secret);
+        void StoreSecret(ISecret secret);
 
         IList<ISecret> SearchSecrets(string pattern, SafeSearchMethod method);
     }

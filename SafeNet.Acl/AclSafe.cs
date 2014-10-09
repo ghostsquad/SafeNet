@@ -47,20 +47,19 @@ namespace SafeNet.Acl {
 
         public abstract void Protect(FileSystemSecurity fileSystemSecurity);
 
-        public abstract ISecret RetrieveSecret(string target);
-
-        public ISecret RetrieveSecret(string filePath, string target) {
-            return this.SearchSecrets(filePath, target).FirstOrDefault();
+        public ISecret RetrieveSecret(string target) {
+            return this.RetrieveSecret(target, SafeSearchMethod.None);
         }
 
-        public abstract IList<ISecret> SearchSecrets(string pattern, SafeSearchMethod method = SafeSearchMethod.None);
+        public abstract ISecret RetrieveSecret(string pattern, SafeSearchMethod method);
 
-        public abstract IList<ISecret> SearchSecrets(
-            string filePath,
-            string pattern,
-            SafeSearchMethod method = SafeSearchMethod.None);
+        public IList<ISecret> SearchSecrets(string pattern) {
+            return this.SearchSecrets(pattern, SafeSearchMethod.None);
+        }
 
-        public abstract bool StoreSecret(ISecret secret);
+        public abstract IList<ISecret> SearchSecrets(string pattern, SafeSearchMethod method);
+
+        public abstract void StoreSecret(ISecret secret);
 
         #endregion
     }
