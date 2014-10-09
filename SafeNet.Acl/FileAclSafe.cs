@@ -18,18 +18,21 @@
 
         public FileAclSafe(FileInfo safeObject, IStorageSchema storageSchema)
             : base(safeObject, storageSchema) {
+
+            this.storageSchema.SafeFile = safeObject;
         }
 
         public FileAclSafe(FileInfo safeObject, IStorageSchema storageSchema, EnvironmentWrapper environment)
             : base(safeObject, storageSchema, environment) {
 
             if (!this.environment.FileExists(safeObject.FullName)) {
-                environment.WriteAllText(safeObject.FullName, string.Empty);   
+                environment.WriteAllText(safeObject.FullName, string.Empty);
             }
 
             this.SafeObject = safeObject;
             this.environment = environment;
             this.storageSchema = storageSchema;
+            this.storageSchema.SafeFile = safeObject;
         }
 
         public override void Protect(IEnumerable<AccessRule> rules) {

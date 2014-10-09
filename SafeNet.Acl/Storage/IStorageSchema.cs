@@ -4,9 +4,10 @@
     using SafeNet.Core;
 
     public interface IStorageSchema {
+        FileInfo SafeFile { get; set; }
 
-        ISecret ReadSecret(FileInfo safeFile, string searchPattern, SafeSearchMethod method);
+        ISecret ReadSecret(string searchPattern, SafeSearchMethod method);
 
-        void WriteSecret(FileInfo safeFile, ISecret secret);
+        void WriteSecret(ISecret secret);
     }
 }

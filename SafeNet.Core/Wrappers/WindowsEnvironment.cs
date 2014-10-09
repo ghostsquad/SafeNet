@@ -6,7 +6,6 @@
 //   The windows environment.
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
-
 namespace SafeNet.Core.Wrappers {
     using System.IO;
     using System.Security.AccessControl;
@@ -90,6 +89,19 @@ namespace SafeNet.Core.Wrappers {
         /// </returns>
         public override bool FileExists(string path) {
             return File.Exists(path);
+        }
+
+        /// <summary>
+        /// The read all text.
+        /// </summary>
+        /// <param name="path">
+        /// The path.
+        /// </param>
+        /// <returns>
+        /// The <see cref="string"/>.
+        /// </returns>
+        public override string ReadAllText(string path) {
+            return File.ReadAllText(path);
         }
 
         /// <summary>

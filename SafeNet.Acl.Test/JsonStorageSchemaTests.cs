@@ -10,6 +10,11 @@
 
     using Moq;
 
+    using Newtonsoft.Json;
+    using Newtonsoft.Json.Linq;
+
+    using Ploeh.AutoFixture;
+
     using SafeNet.Acl.Storage;
     using SafeNet.Core;
     using SafeNet.Test.Common;
@@ -30,8 +35,12 @@
             this.secretsVaultFile =
                 new FileInfo(Path.Combine(Environment.CurrentDirectory, "TestData", "SecretsVault.json"));
 
+
             this.testable = new Testable<JsonStorageSchema>();
-            this.testable.InjectMock<EnvironmentWrapper>();
+            this.environmentMock = this.testable.InjectMock<EnvironmentWrapper>();
+            this.environmentMock.Setup(x => x.ReadAllText(It.IsAny<string>()))
+                .Returns(File.ReadAllText(this.secretsVaultFile.FullName));
+            this.testable.Fixture.Register(() => this.secretsVaultFile);
         }
 
         [Fact]
@@ -39,7 +48,6 @@
             const string SearchPattern = "Hello*";
 
             var actualSecret = this.testable.ClassUnderTest.ReadSecret(
-                this.secretsVaultFile,
                 SearchPattern,
                 SafeSearchMethod.Wildcard);
 
@@ -52,7 +60,6 @@
             const string BadPattern = "Foo*";
 
             var actualSecret = this.testable.ClassUnderTest.ReadSecret(
-                this.secretsVaultFile,
                 BadPattern,
                 SafeSearchMethod.Wildcard);
 
@@ -64,7 +71,6 @@
             const string SearchPattern = @"^Hello \w+";
 
             var actualSecret = this.testable.ClassUnderTest.ReadSecret(
-                this.secretsVaultFile,
                 SearchPattern,
                 SafeSearchMethod.Regex);
 
@@ -77,7 +83,6 @@
             const string BadPattern = "Foo.*";
 
             var actualSecret = this.testable.ClassUnderTest.ReadSecret(
-                this.secretsVaultFile,
                 BadPattern,
                 SafeSearchMethod.Regex);
 
@@ -87,9 +92,11 @@
         [Fact]
         public void ReadSecret_WithNoneSearchMethod() {
             var actualSecret = this.testable.ClassUnderTest.ReadSecret(
-                this.secretsVaultFile,
                 ExpectedTarget,
                 SafeSearchMethod.None);
+
+            actualSecret.Should().NotBeNull();
+            actualSecret.Target.Should().Be(ExpectedTarget);
         }
 
         [Fact]
@@ -97,11 +104,66 @@
             const string BadPattern = "Foo";
 
             var actualSecret = this.testable.ClassUnderTest.ReadSecret(
-                this.secretsVaultFile,
                 BadPattern,
                 SafeSearchMethod.None);
 
             actualSecret.Should().BeNull();
+        }
+
+        [Fact]
+        public void WriteSecret_GivenEmptySecretsFile_ExpectNewList() {
+            var fixture = new Fixture();
+            var expectedSecret = fixture.Create<Secret>();
+            this.environmentMock.Setup(x => x.ReadAllText(It.IsAny<string>()))
+                .Returns(string.Empty);
+
+            string actualContents = null;
+            this.environmentMock.Setup(x => x.WriteAllText(It.IsAny<string>(), It.IsAny<string>()))
+                .Callback<string, string>((x, y) => actualContents = y);
+
+            this.testable.ClassUnderTest.WriteSecret(expectedSecret);
+
+            actualContents.Should().NotBeNullOrEmpty();
+            var jsonArray = JArray.Parse(actualContents);
+            jsonArray.Should().HaveCount(1);
+            var actualSecret = jsonArray[0].ToObject<Secret>();
+            AssertEx.PropertyValuesAreEquals(actualSecret, expectedSecret);
+        }
+
+        [Fact]
+        public void WriteSecret_AppendsSecretToExistingList() {
+            var fixture = new Fixture();
+            var expectedSecret = fixture.Create<Secret>();
+
+            string actualContents = null;
+            this.environmentMock.Setup(x => x.WriteAllText(It.IsAny<string>(), It.IsAny<string>()))
+                .Callback<string, string>((x, y) => actualContents = y);
+
+            this.testable.ClassUnderTest.WriteSecret(expectedSecret);
+            actualContents.Should().NotBeNullOrEmpty();
+            var jsonArray = JArray.Parse(actualContents);
+            jsonArray.Should().HaveCount(2);
+            var actualSecret = jsonArray[1].ToObject<Secret>();
+            AssertEx.PropertyValuesAreEquals(actualSecret, expectedSecret);
+        }
+
+        [Fact]
+        public void WriteSecret_OverwritesSecretIfMatchingTarget() {
+            var fixture = new Fixture();
+            var expectedSecret = fixture.Create<Secret>();
+            expectedSecret.Identifier = Guid.Empty;
+
+            string actualContents = null;
+            this.environmentMock.Setup(x => x.WriteAllText(It.IsAny<string>(), It.IsAny<string>()))
+                .Callback<string, string>((x, y) => actualContents = y);
+
+            this.testable.ClassUnderTest.WriteSecret(expectedSecret);
+
+            actualContents.Should().NotBeNullOrEmpty();
+            var jsonArray = JArray.Parse(actualContents);
+            jsonArray.Should().HaveCount(1);
+            var actualSecret = jsonArray[0].ToObject<Secret>();
+            AssertEx.PropertyValuesAreEquals(actualSecret, expectedSecret);
         }
     }
 }

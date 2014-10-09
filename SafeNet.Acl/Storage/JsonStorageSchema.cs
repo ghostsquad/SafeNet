@@ -11,14 +11,24 @@ namespace SafeNet.Acl.Storage {
     using SafeNet.Core;
 
     public class JsonStorageSchema : IStorageSchema {
+        public FileInfo SafeFile { get; set; }
+
         private readonly EnvironmentWrapper environment;
 
-        public JsonStorageSchema(EnvironmentWrapper environment) {
+        public JsonStorageSchema(EnvironmentWrapper environment) : this(null, environment) {
+        }
+
+        public JsonStorageSchema(FileInfo safeFile, EnvironmentWrapper environment) {
+            this.SafeFile = safeFile;
             this.environment = environment;
         }
 
-        public ISecret ReadSecret(FileInfo safeFile, string searchPattern, SafeSearchMethod method) {
-            var jsonObject = GetJsonFromFile(safeFile.FullName);
+        public ISecret ReadSecret(string searchPattern, SafeSearchMethod method) {
+            if (this.SafeFile == null) {
+                throw new InvalidOperationException("SafeFile has not been set.");
+            }
+
+            var jsonObject = this.GetJsonFromFile(this.SafeFile.FullName);
             ISecret secret = null;
             Regex regex = null;
             switch (method) {
@@ -55,8 +65,12 @@ namespace SafeNet.Acl.Storage {
             return secret;
         }
 
-        public void WriteSecret(FileInfo safeFile, ISecret secret) {
-            var secrets = GetSecretsListFromFile(safeFile.FullName);
+        public void WriteSecret(ISecret secret) {
+            if (this.SafeFile == null) {
+                throw new InvalidOperationException("SafeFile has not been set.");
+            }
+
+            var secrets = this.GetSecretsListFromFile(this.SafeFile.FullName);
             var secretIndex = secrets.FindIndex(x => x.Equals(secret));
             if (secretIndex >= 0) {
                 secrets.RemoveAt(secretIndex);
@@ -66,28 +80,27 @@ namespace SafeNet.Acl.Storage {
                 secrets.Add(secret);
             }
 
-            File.WriteAllText(safeFile.FullName, JsonConvert.SerializeObject(secrets, Formatting.Indented));
+            this.environment.WriteAllText(
+                this.SafeFile.FullName,
+                JsonConvert.SerializeObject(secrets, Formatting.Indented));
         }
 
-        private static JObject GetJsonFromFile(string path) {
-            return JObject.Parse(File.ReadAllText(path));
-        }
-
-        private static List<ISecret> GetSecretsFromJson(JObject jObject) {
-            var rootElement = jObject.First;
-            if (rootElement != null) {
-                var secretsList = rootElement.First;
-                if (secretsList != null) {
-                    return new List<ISecret>(secretsList.ToObject<List<Secret>>());
-                }
+        private JArray GetJsonFromFile(string path) {
+            var safeContents = this.environment.ReadAllText(path);
+            if (string.IsNullOrWhiteSpace(safeContents)) {
+                safeContents = "[]";
             }
 
-            throw new InvalidDataException("Json file appears to be corrupt!");
-        } 
+            return JArray.Parse(safeContents);
+        }
 
-        private static List<ISecret> GetSecretsListFromFile(string path) {
-            var jsonObject = GetJsonFromFile(path);
-            return GetSecretsFromJson(jsonObject);
+        private static List<ISecret> GetSecretsFromJson(JArray jsonArray) {
+            return new List<ISecret>(jsonArray.ToObject<List<Secret>>());
+        }
+
+        private List<ISecret> GetSecretsListFromFile(string path) {
+            var jsonArray = this.GetJsonFromFile(path);
+            return GetSecretsFromJson(jsonArray);
         }
     }
 }

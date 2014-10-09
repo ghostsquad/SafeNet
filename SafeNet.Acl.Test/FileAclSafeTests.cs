@@ -38,6 +38,10 @@
             return new FileInfo(this.expectedFileName);
         }
 
+        private void RegisterFakeFileInfo() {
+            this.testable.Fixture.Register(() => new FileInfo(this.expectedFileName));
+        }
+
         [Fact]
         public void WhenConstructedCreatesFileIfNotExists() {
             this.testable.Fixture.Register(() => new FileInfo(this.expectedFileName));

@@ -10,6 +10,8 @@ namespace SafeNet.Core {
 
         public abstract void WriteAllText(string path, string contents);
 
+        public abstract string ReadAllText(string path);
+
         public abstract bool DirectoryExists(string path);
 
         public abstract bool FileExists(string path);
