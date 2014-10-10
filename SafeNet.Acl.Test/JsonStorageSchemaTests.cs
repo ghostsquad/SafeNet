@@ -1,16 +1,11 @@
 ﻿namespace SafeNet.Acl.Test {
     using System;
-    using System.Collections.Generic;
     using System.IO;
-    using System.Linq;
-    using System.Text;
-    using System.Threading.Tasks;
 
     using FluentAssertions;
 
     using Moq;
 
-    using Newtonsoft.Json;
     using Newtonsoft.Json.Linq;
 
     using Ploeh.AutoFixture;
@@ -111,7 +106,7 @@
         }
 
         [Fact, Integration]
-        public void AfterWritingASecretPasswordCanBeRead() {
+        public void SecurePasswordCanBeReadFromSerializedSecret() {
             string filePath = null;
 
             try {
@@ -159,7 +154,7 @@
         [Fact]
         public void WriteSecret_AppendsSecretToExistingList() {
             var fixture = new Fixture();
-            var expectedSecret = fixture.Create<Secret>();
+            var expectedSecret = fixture.Build<Secret>().With(s => s.Password, "pass123").Create();
 
             string actualContents = null;
             this.environmentMock.Setup(x => x.WriteAllText(It.IsAny<string>(), It.IsAny<string>()))

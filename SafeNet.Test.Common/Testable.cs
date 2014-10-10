@@ -5,14 +5,11 @@
 
     using Ploeh.AutoFixture;
     using Ploeh.AutoFixture.AutoMoq;
-    using Ploeh.AutoFixture.Kernel;
 
     public class Testable<TClassUnderTest>
         where TClassUnderTest : class {
         public Testable() {
             this.Fixture = new Fixture().Customize(new AutoMoqCustomization());
-            this.Fixture.Customizations.Add(new MethodInvoker(new GreedyConstructorQuery()));
-            this.Fixture.Customizations.Add(new MethodInvoker(new GreedyMockConstructorQuery()));
         }
 
         public Testable(Action<Testable<TClassUnderTest>> setup)

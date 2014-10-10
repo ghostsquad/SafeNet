@@ -15,26 +15,30 @@
         public FileAclSafe(FileInfo safeObject)
             : base(safeObject) {
 
-            this.storageSchema.SafeFile = safeObject;
+            this.StorageSchema.SafeFile = safeObject;
         }
 
         public FileAclSafe(FileInfo safeObject, IStorageSchema storageSchema)
             : base(safeObject, storageSchema) {
 
-            this.storageSchema.SafeFile = safeObject;
+            this.StorageSchema.SafeFile = safeObject;
         }
 
         public FileAclSafe(FileInfo safeObject, IStorageSchema storageSchema, EnvironmentWrapper environment)
             : base(safeObject, storageSchema, environment) {
 
-            if (!this.environment.FileExists(safeObject.FullName)) {
+            if (!this.Environment.FileExists(safeObject.FullName)) {
                 environment.WriteAllText(safeObject.FullName, string.Empty);
             }
 
             this.SafeObject = safeObject;
-            this.environment = environment;
-            this.storageSchema = storageSchema;
-            this.storageSchema.SafeFile = safeObject;
+            this.Environment = environment;
+            this.StorageSchema = storageSchema;
+            this.StorageSchema.SafeFile = safeObject;
+        }
+
+        public FileAclSafe(string safePath)
+            : base(safePath) {
         }
 
         public override void Protect() {
@@ -55,11 +59,11 @@
         }
 
         public override void Protect(FileSystemSecurity fileSystemSecurity) {
-            this.environment.SetAccessControl(this.SafeObject, fileSystemSecurity);
+            this.Environment.SetAccessControl(this.SafeObject, fileSystemSecurity);
         }
 
         public override ISecret RetrieveSecret(string pattern, SafeSearchMethod method) {
-            return this.storageSchema.ReadSecret(pattern, method);
+            return this.StorageSchema.ReadSecret(pattern, method);
         }
 
         public override IList<ISecret> SearchSecrets(string pattern, SafeSearchMethod method) {
@@ -67,7 +71,7 @@
         }
 
         public override void StoreSecret(ISecret secret) {
-            this.storageSchema.WriteSecret(secret);
+            this.StorageSchema.WriteSecret(secret);
         }
     }
 }

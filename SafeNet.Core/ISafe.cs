@@ -8,5 +8,7 @@
         void StoreSecret(ISecret secret);
 
         IList<ISecret> SearchSecrets(string pattern, SafeSearchMethod method);
+
+        IList<ISecret> Secrets { get; }
     }
 }

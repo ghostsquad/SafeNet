@@ -17,6 +17,18 @@ namespace SafeNet.Core {
     /// The secret.
     /// </summary>
     public class Secret : ISecret {
+
+        public Secret() {
+            this.Identifier = Guid.NewGuid();
+        }
+
+        public Secret(string target, string username, string password) {
+            this.Identifier = Guid.NewGuid();
+            this.Target = target;
+            this.Username = username;
+            this.Password = password;
+        }
+
         #region Public Properties
 
         /// <summary>

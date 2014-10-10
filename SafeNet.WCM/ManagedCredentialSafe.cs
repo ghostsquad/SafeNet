@@ -18,5 +18,7 @@
         public IList<ISecret> SearchSecrets(string pattern, SafeSearchMethod method) {
             throw new NotImplementedException();
         }
+
+        public IList<ISecret> Secrets { get; private set; }
     }
 }

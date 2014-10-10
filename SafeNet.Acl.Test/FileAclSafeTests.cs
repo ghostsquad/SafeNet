@@ -1,78 +1,65 @@
-﻿namespace SafeNet.Acl.Test {
-    using System;
-    using System.Collections.Generic;
-    using System.IO;
-    using System.Linq;
-    using System.Security.AccessControl;
-    using System.Security.Principal;
-    using System.Text;
-    using System.Threading.Tasks;
+﻿using System;
+using System.IO;
+using System.Linq;
+using System.Security;
+using System.Security.AccessControl;
+using System.Security.Principal;
 
-    using FluentAssertions;
+using FluentAssertions;
 
-    using Moq;
+using Moq;
 
-    using Ploeh.AutoFixture;
-    using Ploeh.AutoFixture.Kernel;
+using Ploeh.AutoFixture;
+using Ploeh.AutoFixture.Kernel;
 
-    using SafeNet.Core;
-    using SafeNet.Test.Common;
+using SafeNet.Acl.Storage;
+using SafeNet.Core;
+using SafeNet.Test.Common;
 
-    using Xunit;
+using Xunit;
 
+namespace SafeNet.Acl.Test {
     public class FileAclSafeTests : IDisposable {
-        private readonly Testable<FileAclSafe> testable;
-
         private readonly Mock<EnvironmentWrapper> environmentMock;
 
         private readonly string expectedFileName;
 
+        private readonly Testable<FileAclSafe> testable;
+
         public FileAclSafeTests() {
             this.testable = new Testable<FileAclSafe>();
+            this.testable.Fixture.Customize<FileAclSafe>(c => c.FromFactory(
+                new MethodInvoker(
+                    new GreedyConstructorQuery())));
             this.environmentMock = this.testable.InjectMock<EnvironmentWrapper>();
             this.expectedFileName = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+            this.testable.Fixture.Register(() => new SecureString());
         }
 
-        private FileInfo GetRealRandomFile() {
-            File.WriteAllText(this.expectedFileName, string.Empty);
-            return new FileInfo(this.expectedFileName);
-        }
-
-        private void RegisterFakeFileInfo() {
-            this.testable.Fixture.Register(() => new FileInfo(this.expectedFileName));
-        }
-
-        [Fact]
-        public void WhenConstructedCreatesFileIfNotExists() {
-            this.testable.Fixture.Register(() => new FileInfo(this.expectedFileName));
-            this.environmentMock.Setup(x => x.FileExists(this.expectedFileName)).Returns(false);
-            var actual = this.testable.ClassUnderTest;
-            this.environmentMock.Verify(x => x.WriteAllText(this.expectedFileName, It.IsAny<string>()), Times.Once());
+        public void Dispose() {
+            if (File.Exists(this.expectedFileName)) {
+                File.Delete(this.expectedFileName);
+            }
         }
 
         [Fact]
-        public void WhenConstructedAndFileExistsNoChange() {
-            this.testable.Fixture.Register(() => new FileInfo(this.expectedFileName));
-            this.environmentMock.Setup(x => x.FileExists(this.expectedFileName)).Returns(true);
-            var actual = this.testable.ClassUnderTest;
-            this.environmentMock.Verify(x => x.WriteAllText(It.IsAny<string>(), It.IsAny<string>()), Times.Never());
-        }
-
-        [Fact]
-        public void WhenProtectedAssignsFileSystemAccessRulesToSafe() {
+        public void Protect_AssignsFileSystemAccessRulesToSafe() {
             var realFile = this.GetRealRandomFile();
             var security = realFile.GetAccessControl();
+
             this.RegisterCurrentUserInFixture();
             this.testable.Fixture.Register(() => realFile);
+            this.environmentMock.Setup(x => x.SetAccessControl(It.IsAny<FileInfo>(), It.IsAny<FileSystemSecurity>()))
+                .Verifiable();
 
             this.testable.ClassUnderTest.Protect(security);
             this.environmentMock.Verify(
-                x => x.SetAccessControl(this.testable.ClassUnderTest.SafeObject, security),
+                x => x.SetAccessControl(this.testable.ClassUnderTest.SafeObject, security), 
                 Times.Once());
         }
 
         [Fact]
-        public void WhenProtectedWithRulesAssignsRulesToSafe() {
+        public void Protect_WithRulesAssignsRulesToSafe() {
             this.RegisterCurrentUserInFixture();
             this.testable.Fixture.Register(this.GetRealRandomFile);
             this.testable.Fixture.Register(() => InheritanceFlags.None);
@@ -90,10 +77,43 @@
             actualRules.ShouldBeEquivalentTo(expectedRules);
         }
 
-        public void Dispose() {
-            if (File.Exists(this.expectedFileName)) {
-                File.Delete(this.expectedFileName);
-            }
+        [Fact]
+        public void RetrieveSecret_OnlyTarget_ExpectSafeSearchNone() {
+            this.RegisterCurrentUserInFixture();
+            var realFile = this.GetRealRandomFile();
+            this.testable.Fixture.Register(() => realFile);
+            this.testable.Fixture.Register(realFile.GetAccessControl);
+            var storage = this.testable.InjectMock<IStorageSchema>();
+            storage.Setup(x => x.ReadSecret(It.IsAny<string>(), SafeSearchMethod.None)).Verifiable();
+
+            this.testable.ClassUnderTest.RetrieveSecret(this.testable.Fixture.Create<string>());
+
+            storage.Verify(x => x.ReadSecret(It.IsAny<string>(), SafeSearchMethod.None));
+        }
+
+        [Fact]
+        public void WhenConstructedAndFileExistsNoChange() {
+            this.testable.Fixture.Register(() => new FileInfo(this.expectedFileName));
+            this.environmentMock.Setup(x => x.FileExists(this.expectedFileName)).Returns(true).Verifiable();
+
+            var actual = this.testable.ClassUnderTest;
+
+            this.environmentMock.Verify(x => x.WriteAllText(It.IsAny<string>(), It.IsAny<string>()), Times.Never());
+        }
+
+        [Fact]
+        public void WhenConstructedCreatesFileIfNotExists() {
+            this.testable.Fixture.Register(() => new FileInfo(this.expectedFileName));
+            this.environmentMock.Setup(x => x.FileExists(this.expectedFileName)).Returns(false).Verifiable();
+
+            var actual = this.testable.ClassUnderTest;
+
+            this.environmentMock.Verify(x => x.WriteAllText(this.expectedFileName, It.IsAny<string>()), Times.Once());
+        }
+
+        private FileInfo GetRealRandomFile() {
+            File.WriteAllText(this.expectedFileName, string.Empty);
+            return new FileInfo(this.expectedFileName);
         }
 
         private void RegisterCurrentUserInFixture() {
