@@ -1,4 +1,6 @@
-﻿namespace SafeNet.WCM {
+﻿using System;
+
+namespace SafeNet.WCM {
     using System.Collections.Generic;
     using System.Security;
 
@@ -9,6 +11,8 @@
     public class ManagedCredential : ISecret {
 
         private Credential credential;
+
+        public Guid Identifier { get; set; }
 
         public string Target { get; set; }
 

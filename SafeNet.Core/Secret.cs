@@ -55,9 +55,9 @@ namespace SafeNet.Core {
                     throw new ArgumentNullException("Password cannot be null!");
                 }
 
-                var securePwd = new SecureString();
+                this.SecurePassword = new SecureString();
                 foreach (var character in value.ToCharArray()) {
-                    securePwd.AppendChar(character);
+                    this.SecurePassword.AppendChar(character);
                 }
             }
         }

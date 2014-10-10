@@ -11,7 +11,7 @@
             throw new NotImplementedException();
         }
 
-        public bool StoreSecret(ISecret secret) {
+        public void StoreSecret(ISecret secret) {
             throw new NotImplementedException();
         }
 

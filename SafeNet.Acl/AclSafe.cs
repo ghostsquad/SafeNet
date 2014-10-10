@@ -15,8 +15,8 @@ namespace SafeNet.Acl {
     public abstract class AclSafe<T> : ISafe where T : FileSystemInfo {
         #region Constructors and Destructors
 
-        protected AclSafe(T fileSystemSafeObject) :
-            this(fileSystemSafeObject, new JsonStorageSchema(WindowsEnvironment.Default)) {
+        protected AclSafe(T safeObject) :
+            this(safeObject, new JsonStorageSchema(WindowsEnvironment.Default)) {
         }
 
         protected AclSafe(T safeObject, IStorageSchema storageSchema) :
@@ -42,6 +42,8 @@ namespace SafeNet.Acl {
         #endregion
 
         #region Public Methods and Operators
+
+        public abstract void Protect();
 
         public abstract void Protect(IEnumerable<AccessRule> rules);
 

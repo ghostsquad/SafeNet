@@ -110,6 +110,32 @@
             actualSecret.Should().BeNull();
         }
 
+        [Fact, Integration]
+        public void AfterWritingASecretPasswordCanBeRead() {
+            string filePath = null;
+
+            try {
+                filePath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+                var fixture = new Fixture();
+                var expectedSecret = fixture.Create<Secret>();
+                expectedSecret.Password = Guid.NewGuid().ToString();
+                var file = new FileInfo(filePath);
+                File.WriteAllText(filePath, string.Empty);
+
+                var safe = new FileAclSafe(file);
+
+                safe.StoreSecret(expectedSecret);
+                var actualSecret = safe.RetrieveSecret(expectedSecret.Target);
+
+                actualSecret.Password.Should().Be(expectedSecret.Password);
+            }
+            finally {
+                if (filePath != null & File.Exists(filePath)) {
+                    File.Delete(filePath);
+                }
+            }
+        }
+
         [Fact]
         public void WriteSecret_GivenEmptySecretsFile_ExpectNewList() {
             var fixture = new Fixture();

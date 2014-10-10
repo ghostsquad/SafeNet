@@ -12,8 +12,10 @@
     using SafeNet.Core;
 
     public class FileAclSafe : AclSafe<FileInfo> {
-        public FileAclSafe(FileInfo fileSystemSafeObject)
-            : base(fileSystemSafeObject) {
+        public FileAclSafe(FileInfo safeObject)
+            : base(safeObject) {
+
+            this.storageSchema.SafeFile = safeObject;
         }
 
         public FileAclSafe(FileInfo safeObject, IStorageSchema storageSchema)
@@ -33,6 +35,10 @@
             this.environment = environment;
             this.storageSchema = storageSchema;
             this.storageSchema.SafeFile = safeObject;
+        }
+
+        public override void Protect() {
+            this.Protect(new List<AccessRule>());
         }
 
         public override void Protect(IEnumerable<AccessRule> rules) {
