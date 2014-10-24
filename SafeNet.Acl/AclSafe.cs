@@ -1,13 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Security.AccessControl;
+﻿namespace SafeNet.Acl {
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Security.AccessControl;
 
-using SafeNet.Acl.Storage;
-using SafeNet.Core;
-using SafeNet.Core.Wrappers;
+    using SafeNet.Acl.Storage;
+    using SafeNet.Core;
+    using SafeNet.Core.Wrappers;
 
-namespace SafeNet.Acl {
     public abstract class AclSafe<T> : ISafe
         where T : FileSystemInfo {
         protected AclSafe(string safePath)
@@ -15,11 +15,8 @@ namespace SafeNet.Acl {
         }
 
         protected AclSafe(T safeObject)
-            : this(safeObject, new JsonStorageSchema(WindowsEnvironment.Default)) {
-        }
-
-        protected AclSafe(T safeObject, IStorageSchema storageSchema)
-            : this(safeObject, storageSchema, WindowsEnvironment.Default) {
+            : this(safeObject, new JsonStorageSchema(WindowsEnvironment.Default), WindowsEnvironment.Default)
+        {
         }
 
         protected AclSafe(T safeObject, IStorageSchema storageSchema, EnvironmentWrapper environment) {

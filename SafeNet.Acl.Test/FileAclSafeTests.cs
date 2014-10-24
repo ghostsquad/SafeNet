@@ -1,24 +1,24 @@
-﻿using System;
-using System.IO;
-using System.Linq;
-using System.Security;
-using System.Security.AccessControl;
-using System.Security.Principal;
+﻿namespace SafeNet.Acl.Test {
+    using System;
+    using System.IO;
+    using System.Linq;
+    using System.Security;
+    using System.Security.AccessControl;
+    using System.Security.Principal;
 
-using FluentAssertions;
+    using FluentAssertions;
 
-using Moq;
+    using Moq;
 
-using Ploeh.AutoFixture;
-using Ploeh.AutoFixture.Kernel;
+    using Ploeh.AutoFixture;
+    using Ploeh.AutoFixture.Kernel;
 
-using SafeNet.Acl.Storage;
-using SafeNet.Core;
-using SafeNet.Test.Common;
+    using SafeNet.Acl.Storage;
+    using SafeNet.Core;
+    using SafeNet.Test.Common;
 
-using Xunit;
+    using Xunit;
 
-namespace SafeNet.Acl.Test {
     public class FileAclSafeTests : IDisposable {
         private readonly Mock<EnvironmentWrapper> environmentMock;
 
@@ -54,7 +54,7 @@ namespace SafeNet.Acl.Test {
 
             this.testable.ClassUnderTest.Protect(security);
             this.environmentMock.Verify(
-                x => x.SetAccessControl(this.testable.ClassUnderTest.SafeObject, security), 
+                x => x.SetAccessControl(this.testable.ClassUnderTest.SafeObject, security),
                 Times.Once());
         }
 
@@ -102,14 +102,18 @@ namespace SafeNet.Acl.Test {
         }
 
         [Fact]
-        public void WhenConstructedCreatesFileIfNotExists() {
+        public void WhenConstructedGivenNonExistantSafeFileCreatesFileAndDirectoryStructure() {
+            var safeObject = new FileInfo(this.expectedFileName);
+            this.testable.Fixture.Register(() => safeObject);
             this.testable.Fixture.Register(() => new FileInfo(this.expectedFileName));
             this.environmentMock.Setup(x => x.FileExists(this.expectedFileName)).Returns(false).Verifiable();
 
             var actual = this.testable.ClassUnderTest;
 
+            this.environmentMock.Verify(x => x.CreateDirectory(safeObject.DirectoryName), Times.Once());
             this.environmentMock.Verify(x => x.WriteAllText(this.expectedFileName, It.IsAny<string>()), Times.Once());
         }
+
 
         private FileInfo GetRealRandomFile() {
             File.WriteAllText(this.expectedFileName, string.Empty);

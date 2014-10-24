@@ -2,11 +2,8 @@
     using System;
     using System.Collections.Generic;
     using System.IO;
-    using System.Linq;
     using System.Security.AccessControl;
     using System.Security.Principal;
-    using System.Text;
-    using System.Threading.Tasks;
 
     using SafeNet.Acl.Storage;
     using SafeNet.Core;
@@ -18,16 +15,11 @@
             this.StorageSchema.SafeFile = safeObject;
         }
 
-        public FileAclSafe(FileInfo safeObject, IStorageSchema storageSchema)
-            : base(safeObject, storageSchema) {
-
-            this.StorageSchema.SafeFile = safeObject;
-        }
-
         public FileAclSafe(FileInfo safeObject, IStorageSchema storageSchema, EnvironmentWrapper environment)
             : base(safeObject, storageSchema, environment) {
 
             if (!this.Environment.FileExists(safeObject.FullName)) {
+                environment.CreateDirectory(safeObject.DirectoryName);
                 environment.WriteAllText(safeObject.FullName, string.Empty);
             }
 
