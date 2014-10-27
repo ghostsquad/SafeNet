@@ -7,12 +7,17 @@
 
     using SafeNet.Acl.Storage;
     using SafeNet.Core;
+    using SafeNet.Core.Wrappers;
 
     public class FileAclSafe : AclSafe<FileInfo> {
-        public FileAclSafe(FileInfo safeObject)
-            : base(safeObject) {
 
-            this.StorageSchema.SafeFile = safeObject;
+        public FileAclSafe(string safePath) :
+            this(new FileInfo(safePath))
+        {
+        }
+
+        public FileAclSafe(FileInfo safeObject)
+            : this(safeObject, new JsonStorageSchema(safeObject, WindowsEnvironment.Default), WindowsEnvironment.Default) {
         }
 
         public FileAclSafe(FileInfo safeObject, IStorageSchema storageSchema, EnvironmentWrapper environment)
@@ -26,11 +31,6 @@
             this.SafeObject = safeObject;
             this.Environment = environment;
             this.StorageSchema = storageSchema;
-            this.StorageSchema.SafeFile = safeObject;
-        }
-
-        public FileAclSafe(string safePath)
-            : base(safePath) {
         }
 
         public override void Protect() {

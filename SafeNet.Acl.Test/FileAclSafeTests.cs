@@ -12,12 +12,14 @@
 
     using Ploeh.AutoFixture;
     using Ploeh.AutoFixture.Kernel;
+    using Ploeh.AutoFixture.Xunit;
 
     using SafeNet.Acl.Storage;
     using SafeNet.Core;
     using SafeNet.Test.Common;
 
     using Xunit;
+    using Xunit.Extensions;
 
     public class FileAclSafeTests : IDisposable {
         private readonly Mock<EnvironmentWrapper> environmentMock;
@@ -28,9 +30,6 @@
 
         public FileAclSafeTests() {
             this.testable = new Testable<FileAclSafe>();
-            this.testable.Fixture.Customize<FileAclSafe>(c => c.FromFactory(
-                new MethodInvoker(
-                    new GreedyConstructorQuery())));
             this.environmentMock = this.testable.InjectMock<EnvironmentWrapper>();
             this.expectedFileName = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
             this.testable.Fixture.Register(() => new SecureString());
@@ -112,6 +111,21 @@
 
             this.environmentMock.Verify(x => x.CreateDirectory(safeObject.DirectoryName), Times.Once());
             this.environmentMock.Verify(x => x.WriteAllText(this.expectedFileName, It.IsAny<string>()), Times.Once());
+        }
+
+        [Theory, Integration, AutoData]
+        public void GivenSafeStringPathCanStoreSecret(Secret expectedSecret)
+        {
+            var safe = new FileAclSafe(this.expectedFileName);
+            safe.StoreSecret(expectedSecret);
+
+            var actualSecret = safe.RetrieveSecret(expectedSecret.Target);
+
+            actualSecret.Target.Should().Be(expectedSecret.Target);
+            actualSecret.Password.Should().Be(expectedSecret.Password);
+            actualSecret.Meta.ShouldBeEquivalentTo(expectedSecret.Meta);
+            actualSecret.Identifier.Should().Be(expectedSecret.Identifier);
+            actualSecret.Username.Should().Be(expectedSecret.Username);
         }
 
 

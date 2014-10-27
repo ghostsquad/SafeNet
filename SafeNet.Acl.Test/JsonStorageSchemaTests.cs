@@ -9,6 +9,7 @@
     using Newtonsoft.Json.Linq;
 
     using Ploeh.AutoFixture;
+    using Ploeh.AutoFixture.Kernel;
 
     using SafeNet.Acl.Storage;
     using SafeNet.Core;
@@ -29,8 +30,6 @@
         public JsonStorageSchemaTests() {
             this.secretsVaultFile =
                 new FileInfo(Path.Combine(Environment.CurrentDirectory, "TestData", "SecretsVault.json"));
-
-
             this.testable = new Testable<JsonStorageSchema>();
             this.environmentMock = this.testable.InjectMock<EnvironmentWrapper>();
             this.environmentMock.Setup(x => x.ReadAllText(It.IsAny<string>()))
@@ -148,7 +147,7 @@
             var jsonArray = JArray.Parse(actualContents);
             jsonArray.Should().HaveCount(1);
             var actualSecret = jsonArray[0].ToObject<Secret>();
-            AssertEx.PropertyValuesAreEquals(actualSecret, expectedSecret);
+            actualSecret.PropertyValuesShouldBeEqual(expectedSecret);
         }
 
         [Fact]
@@ -165,7 +164,7 @@
             var jsonArray = JArray.Parse(actualContents);
             jsonArray.Should().HaveCount(2);
             var actualSecret = jsonArray[1].ToObject<Secret>();
-            AssertEx.PropertyValuesAreEquals(actualSecret, expectedSecret);
+            actualSecret.PropertyValuesShouldBeEqual(expectedSecret);
         }
 
         [Fact]
@@ -184,7 +183,7 @@
             var jsonArray = JArray.Parse(actualContents);
             jsonArray.Should().HaveCount(1);
             var actualSecret = jsonArray[0].ToObject<Secret>();
-            AssertEx.PropertyValuesAreEquals(actualSecret, expectedSecret);
+            actualSecret.PropertyValuesShouldBeEqual(expectedSecret);
         }
     }
 }

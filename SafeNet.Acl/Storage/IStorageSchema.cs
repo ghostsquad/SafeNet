@@ -7,7 +7,8 @@ namespace SafeNet.Acl.Storage {
     using SafeNet.Core;
 
     public interface IStorageSchema {
-        FileInfo SafeFile { get; set; }
+
+        FileSystemInfo SafeObjectInfo { get; }
 
         ISecret ReadSecret(string searchPattern, SafeSearchMethod method);
 

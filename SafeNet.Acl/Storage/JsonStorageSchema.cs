@@ -24,6 +24,18 @@ namespace SafeNet.Acl.Storage {
 
         public FileInfo SafeFile { get; set; }
 
+        public FileSystemInfo SafeObjectInfo
+        {
+            get
+            {
+                return this.SafeFile;
+            }
+            set
+            {
+                this.SafeFile = value as FileInfo;
+            }
+        }
+
         public ISecret ReadSecret(string searchPattern, SafeSearchMethod method) {
             Regex regex = null;
             switch (method) {

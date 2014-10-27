@@ -10,14 +10,6 @@
 
     public abstract class AclSafe<T> : ISafe
         where T : FileSystemInfo {
-        protected AclSafe(string safePath)
-            : this((T)GetFileSystemInfoObjectFromPath(safePath)) {
-        }
-
-        protected AclSafe(T safeObject)
-            : this(safeObject, new JsonStorageSchema(WindowsEnvironment.Default), WindowsEnvironment.Default)
-        {
-        }
 
         protected AclSafe(T safeObject, IStorageSchema storageSchema, EnvironmentWrapper environment) {
             this.SafeObject = safeObject;
@@ -27,9 +19,9 @@
 
         public T SafeObject { get; protected set; }
 
-        protected EnvironmentWrapper Environment { get; set; }
+        internal EnvironmentWrapper Environment { get; set; }
 
-        protected IStorageSchema StorageSchema { get; set; }
+        internal IStorageSchema StorageSchema { get; set; }
 
         public abstract void Protect();
 
@@ -56,20 +48,5 @@
         }
 
         public abstract void StoreSecret(ISecret secret);
-
-        private static FileSystemInfo GetFileSystemInfoObjectFromPath(string safePath) {
-            var attr = File.GetAttributes(safePath);
-            if (attr.HasFlag(FileAttributes.Directory) && typeof(T) == typeof(DirectoryInfo))
-            {
-                return new DirectoryInfo(safePath);
-            }
-
-            if (typeof(T) == typeof(FileInfo)) {
-                return new FileInfo(safePath);
-            }
-
-            throw new InvalidOperationException(
-                string.Format("Object at path [{0}] is expected to be {1}", safePath, typeof(T)));
-        }
     }
 }

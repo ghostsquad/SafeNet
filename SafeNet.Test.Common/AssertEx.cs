@@ -6,7 +6,7 @@
     using FluentAssertions;
 
     public static class AssertEx {
-        public static void PropertyValuesAreEquals(object actual, object expected) {
+        public static void PropertyValuesShouldBeEqual(this object actual, object expected) {
             PropertyInfo[] properties = expected.GetType().GetProperties();
             foreach (PropertyInfo property in properties) {
                 object expectedValue = property.GetValue(expected, null);
