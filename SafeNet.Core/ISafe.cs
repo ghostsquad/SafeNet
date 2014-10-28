@@ -3,6 +3,8 @@
 
     public interface ISafe {
 
+	    void UpsertSecret(ISecret secret);
+
         ISecret RetrieveSecret(string target);
 
         void StoreSecret(ISecret secret);

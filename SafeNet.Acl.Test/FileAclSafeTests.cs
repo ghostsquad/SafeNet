@@ -43,11 +43,10 @@
 
         [Fact]
         public void Protect_AssignsFileSystemAccessRulesToSafe() {
-            var realFile = this.GetRealRandomFile();
+            this.RegisterCurrentUserInFixture();
+            var realFile = this.RegisterRandomFileAsSafe(writeText: true);
             var security = realFile.GetAccessControl();
 
-            this.RegisterCurrentUserInFixture();
-            this.testable.Fixture.Register(() => realFile);
             this.environmentMock.Setup(x => x.SetAccessControl(It.IsAny<FileInfo>(), It.IsAny<FileSystemSecurity>()))
                 .Verifiable();
 
@@ -60,7 +59,7 @@
         [Fact]
         public void Protect_WithRulesAssignsRulesToSafe() {
             this.RegisterCurrentUserInFixture();
-            this.testable.Fixture.Register(this.GetRealRandomFile);
+            this.RegisterRandomFileAsSafe(this.expectedFileName, writeText: true);
             this.testable.Fixture.Register(() => InheritanceFlags.None);
             this.testable.Fixture.Register(() => PropagationFlags.None);
             var expectedRules = this.testable.Fixture.CreateMany<FileSystemAccessRule>().ToList();
@@ -79,8 +78,7 @@
         [Fact]
         public void RetrieveSecret_OnlyTarget_ExpectSafeSearchNone() {
             this.RegisterCurrentUserInFixture();
-            var realFile = this.GetRealRandomFile();
-            this.testable.Fixture.Register(() => realFile);
+            var realFile = this.RegisterRandomFileAsSafe(writeText: true);
             this.testable.Fixture.Register(realFile.GetAccessControl);
             var storage = this.testable.InjectMock<IStorageSchema>();
             storage.Setup(x => x.ReadSecret(It.IsAny<string>(), SafeSearchMethod.None)).Verifiable();
@@ -92,7 +90,7 @@
 
         [Fact]
         public void WhenConstructedAndFileExistsNoChange() {
-            this.testable.Fixture.Register(() => new FileInfo(this.expectedFileName));
+            this.RegisterRandomFileAsSafe();
             this.environmentMock.Setup(x => x.FileExists(this.expectedFileName)).Returns(true).Verifiable();
 
             var actual = this.testable.ClassUnderTest;
@@ -102,40 +100,76 @@
 
         [Fact]
         public void WhenConstructedGivenNonExistantSafeFileCreatesFileAndDirectoryStructure() {
-            var safeObject = new FileInfo(this.expectedFileName);
-            this.testable.Fixture.Register(() => safeObject);
-            this.testable.Fixture.Register(() => new FileInfo(this.expectedFileName));
+            var safe = this.RegisterRandomFileAsSafe();
             this.environmentMock.Setup(x => x.FileExists(this.expectedFileName)).Returns(false).Verifiable();
 
             var actual = this.testable.ClassUnderTest;
 
-            this.environmentMock.Verify(x => x.CreateDirectory(safeObject.DirectoryName), Times.Once());
+            this.environmentMock.Verify(x => x.CreateDirectory(safe.DirectoryName), Times.Once());
             this.environmentMock.Verify(x => x.WriteAllText(this.expectedFileName, It.IsAny<string>()), Times.Once());
         }
 
         [Theory, Integration, AutoData]
-        public void GivenSafeStringPathCanStoreSecret(Secret expectedSecret)
-        {
+        public void GivenSafeStringPathCanStoreSecret(Secret expectedSecret) {
             var safe = new FileAclSafe(this.expectedFileName);
             safe.StoreSecret(expectedSecret);
 
             var actualSecret = safe.RetrieveSecret(expectedSecret.Target);
 
-            actualSecret.Target.Should().Be(expectedSecret.Target);
-            actualSecret.Password.Should().Be(expectedSecret.Password);
-            actualSecret.Meta.ShouldBeEquivalentTo(expectedSecret.Meta);
-            actualSecret.Identifier.Should().Be(expectedSecret.Identifier);
-            actualSecret.Username.Should().Be(expectedSecret.Username);
+            AssertEx.CompareSecrets(actualSecret, expectedSecret);
         }
 
+        [Theory, AutoData]
+        public void Upsert_IfCredentialDoesNotExist_ExpectInserted(Secret expectedSecret) {
+            this.RegisterRandomFileAsSafe();
+            this.environmentMock.Setup(x => x.FileExists(It.IsAny<string>())).Returns(true);
 
-        private FileInfo GetRealRandomFile() {
-            File.WriteAllText(this.expectedFileName, string.Empty);
-            return new FileInfo(this.expectedFileName);
+            var mockStorage = this.testable.InjectMock<IStorageSchema>();
+            mockStorage.Setup(x => x.ReadSecret(It.IsAny<string>(), It.IsAny<SafeSearchMethod>()))
+                .Returns<ISecret>(null);
+
+            mockStorage.Setup(x => x.WriteSecret(It.IsAny<ISecret>())).Verifiable();
+
+            this.testable.ClassUnderTest.UpsertSecret(expectedSecret);
+
+            mockStorage.Verify(x => x.WriteSecret(expectedSecret), Times.Once());
+        }
+
+        [Theory, AutoData]
+        public void Upsert_IfCredentialExists_ExpectWriteWith(Secret expectedSecret, Secret actualSecret) {            
+            this.RegisterRandomFileAsSafe();
+            this.environmentMock.Setup(x => x.FileExists(It.IsAny<string>())).Returns(true);
+
+            var mockStorage = this.testable.InjectMock<IStorageSchema>();
+            mockStorage.Setup(x => x.ReadSecret(It.IsAny<string>(), It.IsAny<SafeSearchMethod>()))
+                .Returns(actualSecret);
+
+            ISecret writtenSecret = null;
+            mockStorage.Setup(x => x.WriteSecret(It.IsAny<ISecret>()))
+                .Callback<ISecret>(x => writtenSecret = x);
+
+            this.testable.ClassUnderTest.UpsertSecret(expectedSecret);
+
+            AssertEx.CompareSecrets(writtenSecret, expectedSecret, false);
+            writtenSecret.Identifier.Should().Be(actualSecret.Identifier);
         }
 
         private void RegisterCurrentUserInFixture() {
             this.testable.Fixture.Register<IdentityReference>(() => new NTAccount(WindowsIdentity.GetCurrent().Name));
+        }
+
+        private FileInfo RegisterRandomFileAsSafe(bool writeText = false) {
+            return this.RegisterRandomFileAsSafe(this.expectedFileName, writeText);
+        }
+
+        private FileInfo RegisterRandomFileAsSafe(string path, bool writeText = false) {
+            if (writeText) {
+                File.WriteAllText(path, string.Empty);
+            }
+            var safe = new FileInfo(path);
+            this.testable.Fixture.Register(() => safe);
+
+            return safe;
         }
     }
 }

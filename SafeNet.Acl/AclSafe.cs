@@ -29,6 +29,15 @@
 
         public abstract void Protect(FileSystemSecurity fileSystemSecurity);
 
+        public void UpsertSecret(ISecret secret) {
+            var existing = this.RetrieveSecret(secret.Target);
+            if (existing != null) {
+                secret.Identifier = existing.Identifier;
+            }
+
+            this.StoreSecret(secret);
+        }
+
         public ISecret RetrieveSecret(string target) {
             return this.RetrieveSecret(target, SafeSearchMethod.None);
         }

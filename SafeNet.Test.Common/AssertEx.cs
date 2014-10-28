@@ -5,6 +5,8 @@
 
     using FluentAssertions;
 
+    using SafeNet.Core;
+
     public static class AssertEx {
         public static void PropertyValuesShouldBeEqual(this object actual, object expected) {
             PropertyInfo[] properties = expected.GetType().GetProperties();
@@ -25,6 +27,20 @@
                     actualValue.Should().Be(expectedValue, message);
                 }                  
             }
+        }
+
+        public static void CompareSecrets(ISecret actual, ISecret expected, bool compareId = true) {
+            actual.Should().NotBeNull();
+            expected.Should().NotBeNull();
+
+            if (compareId) {
+                actual.Identifier.Should().Be(expected.Identifier);
+            }
+
+            actual.Target.Should().Be(expected.Target);
+            actual.Username.Should().Be(expected.Username);
+            actual.Password.Should().Be(expected.Password);
+            actual.Meta.ShouldBeEquivalentTo(expected.Meta);
         }
     }
 }
