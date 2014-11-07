@@ -9,7 +9,6 @@
     using Newtonsoft.Json.Linq;
 
     using Ploeh.AutoFixture;
-    using Ploeh.AutoFixture.Kernel;
 
     using SafeNet.Acl.Storage;
     using SafeNet.Core;
@@ -25,8 +24,6 @@
 
         private readonly Mock<EnvironmentWrapper> environmentMock;
 
-        private const string ExpectedTarget = "Hello World";
-
         public JsonStorageSchemaTests() {
             this.secretsVaultFile =
                 new FileInfo(Path.Combine(Environment.CurrentDirectory, "TestData", "SecretsVault.json"));
@@ -35,73 +32,6 @@
             this.environmentMock.Setup(x => x.ReadAllText(It.IsAny<string>()))
                 .Returns(File.ReadAllText(this.secretsVaultFile.FullName));
             this.testable.Fixture.Register(() => this.secretsVaultFile);
-        }
-
-        [Fact]
-        public void ReadSecret_WithWildCardSearch() {
-            const string SearchPattern = "Hello*";
-
-            var actualSecret = this.testable.ClassUnderTest.ReadSecret(
-                SearchPattern,
-                SafeSearchMethod.Wildcard);
-
-            actualSecret.Should().NotBeNull();
-            actualSecret.Target.Should().Be(ExpectedTarget);
-        }
-
-        [Fact]
-        public void ReadSecret_WithWildCardSearch_WhenNoMatch_ExpectNull() {
-            const string BadPattern = "Foo*";
-
-            var actualSecret = this.testable.ClassUnderTest.ReadSecret(
-                BadPattern,
-                SafeSearchMethod.Wildcard);
-
-            actualSecret.Should().BeNull();
-        }
-
-        [Fact]
-        public void ReadSecret_WithRegexCardSearch() {
-            const string SearchPattern = @"^Hello \w+";
-
-            var actualSecret = this.testable.ClassUnderTest.ReadSecret(
-                SearchPattern,
-                SafeSearchMethod.Regex);
-
-            actualSecret.Should().NotBeNull();
-            actualSecret.Target.Should().Be(ExpectedTarget);
-        }
-
-        [Fact]
-        public void ReadSecret_WithRegexSearch_WhenNoMatch_ExpectNull() {
-            const string BadPattern = "Foo.*";
-
-            var actualSecret = this.testable.ClassUnderTest.ReadSecret(
-                BadPattern,
-                SafeSearchMethod.Regex);
-
-            actualSecret.Should().BeNull();
-        }
-
-        [Fact]
-        public void ReadSecret_WithNoneSearchMethod() {
-            var actualSecret = this.testable.ClassUnderTest.ReadSecret(
-                ExpectedTarget,
-                SafeSearchMethod.None);
-
-            actualSecret.Should().NotBeNull();
-            actualSecret.Target.Should().Be(ExpectedTarget);
-        }
-
-        [Fact]
-        public void ReadSecret_WithNoneSearchMethod_WhenNoMatch_ExpectNull() {
-            const string BadPattern = "Foo";
-
-            var actualSecret = this.testable.ClassUnderTest.ReadSecret(
-                BadPattern,
-                SafeSearchMethod.None);
-
-            actualSecret.Should().BeNull();
         }
 
         [Fact, Integration]

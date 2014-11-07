@@ -8,7 +8,7 @@
     using SafeNet.Core;
     using SafeNet.Core.Wrappers;
 
-    public abstract class AclSafe<T> : ISafe
+    public abstract class AclSafe<T> : SafeBase
         where T : FileSystemInfo {
 
         protected AclSafe(T safeObject, IStorageSchema storageSchema, EnvironmentWrapper environment) {
@@ -38,24 +38,14 @@
             this.StoreSecret(secret);
         }
 
-        public ISecret RetrieveSecret(string target) {
-            return this.RetrieveSecret(target, SafeSearchMethod.None);
-        }
-
-        public abstract ISecret RetrieveSecret(string pattern, SafeSearchMethod method);
-
         public IList<ISecret> SearchSecrets(string pattern) {
             return this.SearchSecrets(pattern, SafeSearchMethod.None);
         }
-
-        public abstract IList<ISecret> SearchSecrets(string pattern, SafeSearchMethod method);
 
         public IList<ISecret> Secrets {
             get {
                 return this.StorageSchema.GetSecrets();
             }
         }
-
-        public abstract void StoreSecret(ISecret secret);
     }
 }

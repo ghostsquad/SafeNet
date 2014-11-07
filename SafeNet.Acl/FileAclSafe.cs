@@ -54,14 +54,6 @@
             this.Environment.SetAccessControl(this.SafeObject, fileSystemSecurity);
         }
 
-        public override ISecret RetrieveSecret(string pattern, SafeSearchMethod method) {
-            return this.StorageSchema.ReadSecret(pattern, method);
-        }
-
-        public override IList<ISecret> SearchSecrets(string pattern, SafeSearchMethod method) {
-            throw new NotImplementedException();
-        }
-
         public override void StoreSecret(ISecret secret) {
             this.StorageSchema.WriteSecret(secret);
         }

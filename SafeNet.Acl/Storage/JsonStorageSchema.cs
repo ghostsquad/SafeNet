@@ -1,15 +1,14 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text.RegularExpressions;
-
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-
-using SafeNet.Core;
-
 namespace SafeNet.Acl.Storage {
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Linq;
+
+    using Newtonsoft.Json;
+    using Newtonsoft.Json.Linq;
+
+    using SafeNet.Core;
+
     public class JsonStorageSchema : IStorageSchema {
         private readonly EnvironmentWrapper environment;
 
@@ -34,42 +33,6 @@ namespace SafeNet.Acl.Storage {
             {
                 this.SafeFile = value as FileInfo;
             }
-        }
-
-        public ISecret ReadSecret(string searchPattern, SafeSearchMethod method) {
-            Regex regex = null;
-            switch (method) {
-                case SafeSearchMethod.Wildcard: {
-                    regex = new Wildcard(searchPattern, RegexOptions.IgnoreCase);
-                    break;
-                }
-
-                case SafeSearchMethod.Regex: {
-                    regex = new Regex(searchPattern, RegexOptions.IgnoreCase);
-                    break;
-                }
-
-                case SafeSearchMethod.None: {
-                    break;
-                }
-
-                default: {
-                    throw new NotImplementedException(string.Format("Method {0} has not been implemented.", method));
-                }
-            }
-
-            ISecret secret;
-            var secrets = this.GetSecrets();
-            if (regex != null) {
-                secret = secrets.FirstOrDefault(x => regex.IsMatch(x.Target));
-            }
-            else {
-                secret =
-                    secrets.FirstOrDefault(
-                        x => string.Equals(x.Target, searchPattern, StringComparison.InvariantCultureIgnoreCase));
-            }
-
-            return secret;
         }
 
         public void WriteSecret(ISecret secret) {

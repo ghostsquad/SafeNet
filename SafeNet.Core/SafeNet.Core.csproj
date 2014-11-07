@@ -40,6 +40,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="SafeBase.cs" />
     <Compile Include="Secret.cs" />
     <Compile Include="Wrappers\EnvironmentWrapper.cs" />
     <Compile Include="ISafe.cs" />
